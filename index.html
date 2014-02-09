@@ -1,0 +1,124 @@
+<html>
+<head>
+<title>Crappy Bird!</title>
+<script>
+
+var imgBird;
+var bx, by, bdx, bdy;
+var bh, bw;
+
+var px = new Array(), pw = 64;
+var py = new Array(), ph = 128;
+
+var key_jump = false;
+
+var hold = 0;
+
+function reset() {
+	bx = 128, by = 128, bdx = 0, bdy = 0;
+	bh = 32, bw = 32;
+
+	px[0] = 600;
+	py[0] = 120;
+
+	px[1] = 800;
+	py[1] = 60;
+
+	px[2] = 1000;
+	py[2] = 200;
+}
+
+function load() {
+	reset();
+	imgBird = new Image();
+	imgBird.onload = function() {	
+		setInterval(draw, 20);
+	}
+	imgBird.src = "bird.png";
+}
+
+function draw() {
+
+	if (hold > 1) { hold--; return; }
+	if (hold == 1) { hold = 0; reset(); }
+
+	var ctx = document.getElementById('canvas').getContext('2d');
+
+	ctx.clearRect(0, 0, 640, 420);
+
+	ctx.fillStyle = "rgb(0,0,220)";
+	ctx.fillRect (0, 0, 640, 420);
+
+	ctx.fillStyle = "rgb(0, 200, 0)";
+	ctx.fillRect (0, 350, 640, 420 - 350);
+
+	for (i = 0; i < 3; i++) {
+
+		ctx.fillStyle = "rgb(200, 0, 0)";
+		ctx.fillRect (px[i], 0, pw, py[i]);
+
+		ctx.fillStyle = "rgb(200, 0, 0)";
+		ctx.fillRect (px[i], py[i]+ph, pw, 420);
+
+		px[i]-= 2;
+
+		if (bx + bw >= px[i] && bx <= px[i] + pw && (by < py[i] || by + bh > py[i] + ph)) hold = 30;
+	}
+
+	bdy+=0.4;
+
+	bx+=bdx;
+	by+=bdy;
+
+	if (by + bh > 350) hold = 30;
+
+	if (key_jump) bdy = -7;
+
+	ctx.drawImage(imgBird, 0, 0, bw, bh, bx, by, 32, 32);
+}
+
+function handleKeyDown(event)
+{
+	if (event.keyCode == 32) // space
+		key_jump = true;
+
+	return stopPropagation(event.keyCode, event);
+}
+
+function handleKeyUp(event)
+{
+	if (event.keyCode == 32) // space
+		key_jump = false;
+
+	return stopPropagation(event.keyCode, event);
+}
+
+function stopPropagation(keyCode, event) {
+	if (keyCode == 32 || keyCode == 37 || keyCode == 39) {
+		if (event.preventDefault) event.preventDefault();
+		if (event.stopPropagation) event.stopPropagation();
+		return false;
+	}
+}
+
+function onload() {
+	if (!document.addEventListener && document.attachEvent)
+	{
+		// IE
+		document.attachEvent('onkeydown', handleKeyDown)
+		// document.attachEvent('onkeypress', handleKeyPress)
+		document.attachEvent('onkeyup', handleKeyUp)
+	} else {
+		window.addEventListener('keydown', handleKeyDown, true)
+		// window.addEventListener('keypress', handleKeyPress, true)
+		window.addEventListener('keyup', handleKeyUp, true)
+	}
+
+	load();
+}
+</script>
+</head>
+<body onload="onload();">
+<canvas id="canvas" width="640" height="420"></canvas>
+</body>
+</html>
